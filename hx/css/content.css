@@ -1,0 +1,211 @@
+html{
+    width: 100%;
+    height:100%;
+}
+body{
+    width: 100%;
+    height: 100%;
+    background-image: url(../images/bgimg.png);
+    background-repeat: repeat;
+}
+.content{
+    width: 15rem;
+    height: auto;
+    margin: 0rem auto;
+    background-color: #ffffff;
+}
+.logo{
+    width: 4.5rem;
+    height: 1.3rem;
+    border: 1px solid #ccc;
+    background-color: #eee;
+    border-radius: 2px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #222;
+    text-align: center;
+    float: right;
+}
+.drawbox{
+    width: 12.5rem;
+    height: 12.5rem;
+    margin: 0px auto;
+}
+.leftpart {
+    width: 6.15rem;
+    height: 12.4rem;
+    padding: 0px;
+    border: 0.05rem solid;
+    border-right: 0.05rem dashed;
+    border-color: #cccccc;
+    background-color: #ffffff;
+    display: inline-block;
+}
+.rightpart{
+    width: 6.15rem;
+    height: 12.4rem;
+    padding: 0px;
+    /*border-width: 1px;*/
+    border: 0.05rem solid;
+    border-left: 0.05rem dashed;
+    border-color: #cccccc;
+    background-color: #ffffff;
+    display: inline-block;
+}
+.rightpart1,.leftpart1{
+    background: url("../images/shadow.png") no-repeat;
+    background-size: cover;
+}
+.whole{
+    width: 12.45rem;
+    height: 12.45rem;
+    padding: 0px;
+    border: 0.05rem solid #cccccc;
+    background-color: #ffffff;
+}
+.historyheart{
+    width: 3.5rem;
+    height: 3.5rem;
+    border: 0.05rem solid #cccccc;
+}
+.introduce{
+    position: fixed;
+    top: 0rem;
+    width: 100%;
+    height: 100%;
+    margin: 0px auto;
+    background-color: #000;
+    opacity: 0.85;
+}
+.introword{
+    width: 74%;
+    padding-top: 2rem;
+    margin: 0px auto;
+    display:block;
+}
+.start{
+    width: 7rem;
+    height: 1.8rem;
+    border: 0.05rem solid #F65388;
+    background-color: #222;
+    border-radius: 0.1rem;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #F65388;
+    text-align: center;
+    margin: 3rem 4rem;
+}
+.buttonbox{
+    width: 12.4rem;
+    height: 2rem;
+    margin-top: 3rem;
+    margin-left: 1.3rem;
+}
+.restart{
+    width: 5rem;
+    height: 1.5rem;
+    border: 0.05rem solid #9595c6;
+    background-color: #fff;
+    border-radius: 0.1rem;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #9595c6;
+    text-align: center;
+    float: left;
+}
+.share{
+    width: 5rem;
+    height: 1.5rem;
+    border: 0.05rem solid #F65388;
+    background-color: #fff;
+    border-radius: 0.1rem;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #F65388;
+    text-align: center;
+    float: right;
+}
+.ranking{
+    width: 14rem;
+    height: 3rem;
+    margin: 0.5rem auto;
+    display:block;
+}
+.rankinglist{
+    width: 15rem;
+    height: auto;
+    text-align: center;
+    margin: 0px auto;
+    background-color: #ffffff;
+}
+.shareintro{
+    width: 14rem;
+    height: 12rem;
+    float: right;
+    margin-right: 0.5rem;
+    display:block;
+}
+.myresult{
+    width: 15rem;
+    height: 4rem;
+    margin: 0rem auto;
+    text-align: center;
+    background-color: #ffffff;
+}
+.date{
+    width: 9rem;
+    display: inline-block;
+}
+.myhead , .friendhead{
+    width: 2.5rem;
+    height: 2.5rem;
+}
+.myhead , .myname{
+    float: left;
+}
+.friendhead , .friendname{
+    float: right;
+}
+.percentbar{
+    width: 8.5rem;
+    height: 0.75rem;
+    margin: 0.25rem auto 0rem;
+}
+.rank1{
+    width: 15rem;
+    height: 6rem;
+    margin: 0.25rem auto;
+}
+.friend1{
+    width: 11rem;
+    float: left;
+    display: inline-block;
+}
+.userhead{
+    width: 2.5rem;
+    height: 2.5rem;
+}
+.result1{
+    width: 7.5rem;
+    display: inline-block;
+}
+.username{
+    font-size: 0.5rem;
+    font-weight: bold;
+    text-align: left;
+}
+.percentbar1{
+    width: 3.5rem;
+    display: inline-block;
+}
+.progress{
+    margin: 0rem;
+    height: 0.6rem;
+}
+.resultword{
+    width: 15rem;
+    font-size: 1rem;
+    font-weight: bold;
+    background-color: #ede7f3;
+    text-align: left;
+}

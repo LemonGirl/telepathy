@@ -1,0 +1,476 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="screen-orientation" content="portrait">
+    <meta name="x5-orientation" content="portrait">
+    <meta name="viewport" content="height=device-height,width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0">
+    <title>心灵感应</title>
+    <link rel="stylesheet" href="css/reset.css" />
+    <link rel="stylesheet" href="css/content.css" />
+</head>
+<body>
+<div class="logo">碰碰出品</div>
+<div style="height: 2rem"></div>
+<div class="content">
+    <div class="drawbox">
+        <div class="leftpart leftpart1"></div><canvas id="rightpart" class="rightpart" width="123" height="248"></canvas>
+    </div>
+    <p style="margin-top: 0.5rem;border-radius: 0.1rem; font-size:0.7rem;text-align: center;color: #000000;background-color: #ede7f3;">TA在左边画了半颗心，用你的心灵感应帮TA拥有一颗完整的心吧~</p>
+    <div class="buttonbox">
+        <button class="restart" onclick="redraw()">再画一次</button>
+        <button class="share"style="width: 5rem;" onclick="submitted()">提交作品</button>
+    </div>
+</div>
+</body>
+</html>
+<script src="http://p1.cdn.pengpengla.com/sdk/2.2.0/js/seed.js"></script>
+<script>
+    var methodurl = "http://61.183.254.150/";
+    var codestr;
+    var topicId;
+    var myopenid;
+    var access_token;
+    var myheadimgurl;
+    var mynickname;
+    var myunionid;
+    var magnification;
+
+    var sleftpointx=[];
+    var sleftpointy=[];
+    var leftpointx=[];
+    var leftpointy=[];
+
+    var srightpointx=[];
+    var srightpointy=[];
+    var rightpointx=[];
+    var rightpointy=[];
+
+    var leftsquare= 0,rightsquare= 0,shadedsquare= 0,shadedsquare1= 0,shadedsquare2= 0,shadedsquare3=0;
+    var sum0= 0,sum1= 0,sum2= 0,sum3= 0,sum4= 0,sum5= 0,sum6= 0,sum7= 0,sum8= 0,sum9=0;
+
+    var commonl=[];
+    var commonr=[];
+
+    var similarity=0;
+
+    document.addEventListener("touchmove", function (e) {
+        e.preventDefault();
+    }, false);
+    function getfont (){
+        var html1 = document.documentElement;
+        var screen = html1.clientWidth;
+        html1.style.fontSize = 0.0625*screen+'px';
+        magnification=(screen/320);
+    };
+    function getcode(){
+        var oauth = new PP.oauth({
+            appid : '0a1b731fe4118808472f43ea5a31f600',
+            state : 'dfsdfsfd',
+            backurl : location.href
+        });
+        oauth.authenticate();
+    };
+
+    // 面积
+    function square(leftpointx,leftpointy,rightpointx,rightpointy){
+
+        // 左半心面积
+        for(var i=0;i<leftpointx.length-1;i++){
+            sum0+=(leftpointx[i]*leftpointy[i+1]-leftpointx[i+1]*leftpointy[i]);
+        }
+        leftsquare=(Math.abs(sum0+(leftpointx[i]*leftpointy[0])-(leftpointx[0]*leftpointy[i])))/2;
+
+        // 阴影面积
+        for(var m=0;m<leftpointx.length;m++){
+            for(var n=0;n<rightpointx.length;n++){
+                // 获取交点
+                if(leftpointx[m]==rightpointx[n]){
+                    if(leftpointy[m]==rightpointy[n]){
+                        commonl.push(m);
+                        commonr.push(n);
+                    }
+                }
+            }
+        }
+        if(commonl.length==0){
+            for(var i=0;i<leftpointx.length-1;i++){
+                sum1+=(leftpointx[i]*leftpointy[i+1]-leftpointx[i+1]*leftpointy[i]);
+            }
+            for(var j=0;j<rightpointx.length-1;j++){
+                sum2+=(rightpointx[j]*rightpointy[j+1]-rightpointx[j+1]*rightpointy[j]);
+            }
+            shadedsquare=(Math.abs(sum1-sum2+(leftpointx[i]*rightpointy[j]-rightpointx[j]*leftpointy[i])+(rightpointx[0]*leftpointy[0]-leftpointx[0]*rightpointy[0])))/2;
+        }
+        else{
+            for(var i=0;i<commonl[0];i++){
+                sum3+=(leftpointx[i]*leftpointy[i+1]-leftpointx[i+1]*leftpointy[i]);
+            }
+            for(var j=0;j<commonr[0];j++){
+                sum4+=(rightpointx[j]*rightpointy[j+1]-rightpointx[j+1]*rightpointy[j]);
+            }
+            shadedsquare1=(Math.abs(sum3-sum4+(rightpointx[0]*leftpointy[0]-leftpointx[0]*rightpointy[0])))/2;
+
+            if(commonl.length>=2){
+                for(var a=0;a<commonl.length-1;a++){
+                    for(var i=commonl[a];i<commonl[a+1];i++){
+                        sum5+=(leftpointx[i]*leftpointy[i+1]-leftpointx[i+1]*leftpointy[i]);
+                    }
+                    for(var j=commonr[a];j<commonr[a+1];j++){
+                        sum6+=(rightpointx[j]*rightpointy[j+1]-rightpointx[j+1]*rightpointy[j]);
+                    }
+                    shadedsquare2+=((Math.abs(sum5-sum6))/2);
+                    sum5=0;
+                    sum6=0;
+                }
+            }
+            else{
+                shadedsquare2=0;
+            }
+
+            for(var i=commonl[commonl.length-1];i<leftpointx.length-1;i++){
+                sum7+=(leftpointx[i]*leftpointy[i+1]-leftpointx[i+1]*leftpointy[i]);
+            }
+            for(var j=commonr[commonr.length-1];j<rightpointx.length-1;j++){
+                sum8+=(rightpointx[j]*rightpointy[j+1]-rightpointx[j+1]*rightpointy[j]);
+            }
+            shadedsquare3=(Math.abs(sum7-sum8+(leftpointx[leftpointx.length-1]*rightpointy[rightpointx.length-1]-rightpointx[rightpointx.length-1]*leftpointy[leftpointx.length-1])))/2;
+
+            shadedsquare=shadedsquare1+shadedsquare2+shadedsquare3;
+        }
+
+        // 右半心面积
+        for(var i=0;i<rightpointx.length-1;i++){
+            sum9+=(rightpointx[i]*rightpointy[i+1]-rightpointx[i+1]*rightpointy[i]);
+        }
+        rightsquare=(Math.abs(sum9+(rightpointx[i]*rightpointy[0]-rightpointx[0]*rightpointy[i])))/2;
+
+        // 契合度
+        similarity=parseInt(((leftsquare+rightsquare-shadedsquare)/(leftsquare+rightsquare+shadedsquare))*100);
+        if((sleftpointx.length==1)||(srightpointx.length==0)){
+            similarity=0;
+        }
+    };
+
+    window.onload = function(){
+
+        var urlstr = window.location.search;
+
+        if (urlstr.indexOf('topicId=') >= 0) {
+
+            if (urlstr.indexOf('code=') >= 0){
+                var codestr_start=urlstr.indexOf("code=")+"code=".length;
+                var codestr_end=urlstr.indexOf("&",codestr_start);
+                codestr=urlstr.substring(codestr_start,codestr_end);
+            }
+            else{
+                getcode();
+            }
+            var topicId_start = urlstr.indexOf("topicId=") + "topicId=".length;
+            var topicId_end = urlstr.indexOf("&", topicId_start);
+            topicId = urlstr.substring(topicId_start, topicId_end);
+        }
+        else{
+            document.write("Error!!!");
+            return;
+        }
+
+        // 定义rem
+        getfont();
+        window.onresize = function() {
+            getfont();
+        }
+
+        // 获取当前用户的openid
+        $.ajax({
+            type: "POST",
+            url: methodurl+"heart/access_token",
+            data: {appid:"0a1b731fe4118808472f43ea5a31f600",code:codestr},
+            dataType: "json",
+            success: function (e) {
+                var json = JSON.parse(e);
+                myopenid = json.openid;
+                access_token = json.access_token;
+
+                // 判断是不是本人分享的游戏
+                $.ajax({
+                    type: "POST",
+                    url: methodurl+"heart/GetData",
+                    data: {appId:"0a1b731fe4118808472f43ea5a31f600",topicId:topicId},
+                    dataType: "json",
+                    success: function (e) {
+                        var json = JSON.parse(e)
+                        if(json.openid==myopenid){
+                            location.href="myresult.html?topicId="+topicId;
+                        }
+                        else{
+                            // 若不是本人分享的，判断有没有玩过这局游戏
+                            $.ajax({
+                                type: "POST",
+                                url: methodurl+"heart/GetNumRound",
+                                data: {topicId:topicId,openId:myopenid},
+                                dataType: "json",
+                                success: function (e) {
+                                    var getNumRoundResult = JSON.parse(e);
+                                    // 若getNumRoundResult等于0，没玩过
+                                    if(getNumRoundResult==0){
+
+                                        // 获取当前用户信息
+                                        $.ajax({
+                                            type:"POST",
+                                            url: methodurl+"heart/userinfo",
+                                            data: {access_token:access_token,openId:myopenid},
+                                            dataType: "json",
+                                            success:function(e){
+                                                var json=JSON.parse(e);
+                                                myunionid=json.unionid;
+                                                myheadimgurl=json.headimgurl;
+                                                mynickname=json.nickname;
+                                            }
+                                        });
+
+                                        // 获取左边数据并还原左边半心
+                                        $.ajax({
+                                            type: "POST",
+                                            url: methodurl+"heart/GetData",
+                                            data: {appId:"0a1b731fe4118808472f43ea5a31f600",topicId:topicId},
+                                            dataType: "json",
+                                            success: function (e) {
+                                                var json=JSON.parse(e)
+                                                sleftpointx= json.x;
+                                                sleftpointy=json.y;
+
+                                                // 插值补充坐标
+                                                for(var i=0;i<sleftpointx.length-1;i++){
+                                                    // 如果i点横坐标=i+1点横坐标
+                                                    if(sleftpointx[i]==sleftpointx[i+1]){
+                                                        // 如果i点纵坐标=i+1点纵坐标
+                                                        if(sleftpointy[i]==sleftpointy[i+1]){
+                                                        }
+                                                        // 如果i点纵坐标<i+1点纵坐标
+                                                        else if(sleftpointy[i]<sleftpointy[i+1]){
+                                                            // 向下填充
+                                                            for(var a=sleftpointy[i];a<sleftpointy[i+1];a++){
+                                                                leftpointx.push(sleftpointx[i]);
+                                                                leftpointy.push(a);
+                                                            }
+                                                        }
+                                                        // 如果i点纵坐标>i+1点纵坐标
+                                                        else{
+                                                            // 向上填充
+                                                            for(var a=sleftpointy[i];a>sleftpointy[i+1];a--){
+                                                                leftpointx.push(sleftpointx[i]);
+                                                                leftpointy.push(a);
+                                                            }
+                                                        }
+                                                    }
+                                                    // 如果i点横坐标>i+1点横坐标
+                                                    else if(sleftpointx[i]>sleftpointx[i+1]){
+                                                        // 先向左填充
+                                                        for(var a=sleftpointx[i];a>sleftpointx[i+1];a--){
+                                                            leftpointx.push(a);
+                                                            leftpointy.push(sleftpointy[i]);
+                                                        }
+                                                        // 横向填充完，如果i点纵坐标=i+1点纵坐标
+                                                        if(sleftpointy[i]==sleftpointy[i+1]){
+
+                                                        }
+                                                        // 如果i点纵坐标<i+1点纵坐标
+                                                        else if(sleftpointy[i]<sleftpointy[i+1]){
+                                                            // 向下填充
+                                                            for(var b=sleftpointy[i];b<sleftpointy[i+1];b++){
+                                                                leftpointx.push(sleftpointx[i+1]);
+                                                                leftpointy.push(b);
+                                                            }
+                                                        }
+                                                        // 如果i点纵坐标>i+1点纵坐标
+                                                        else{
+                                                            // 向上填充
+                                                            for(var b=sleftpointy[i];b>sleftpointy[i+1];b--){
+                                                                leftpointx.push(sleftpointx[i+1]);
+                                                                leftpointy.push(b);
+                                                            }
+                                                        }
+                                                    }
+                                                    // 如果i点横坐标<i+1点横坐标
+                                                    else{
+                                                        // 先向右填充
+                                                        for(var a=sleftpointx[i];a<sleftpointx[i+1];a++){
+                                                            leftpointx.push(a);
+                                                            leftpointy.push(sleftpointy[i]);
+                                                        }
+                                                        // 横向填充完，如果i点纵坐标=i+1点纵坐标
+                                                        if(sleftpointy[i]==sleftpointy[i+1]){
+
+                                                        }
+                                                        // 如果i点纵坐标<i+1点纵坐标
+                                                        else if(sleftpointy[i]<sleftpointy[i+1]){
+                                                            // 向下填充
+                                                            for(var b=sleftpointy[i];b<sleftpointy[i+1];b++){
+                                                                leftpointx.push(sleftpointx[i+1]);
+                                                                leftpointy.push(b);
+                                                            }
+                                                        }
+                                                        // 如果i点纵坐标>i+1点纵坐标
+                                                        else{
+                                                            // 向上填充
+                                                            for(var b=sleftpointy[i];b>sleftpointy[i+1];b--){
+                                                                leftpointx.push(sleftpointx[i+1]);
+                                                                leftpointy.push(b);
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                leftpointx.push(sleftpointx[sleftpointx.length-1]);
+                                                leftpointy.push(sleftpointy[sleftpointx.length-1]);
+                                            }
+                                        });
+
+                                        // 画右边半心
+                                        var oCR = document.getElementById('rightpart');
+                                        var oGCR = oCR.getContext('2d');
+
+                                        oCR.ontouchstart = function(ev){
+                                            var ev = ev || window.event;
+                                            oGCR.moveTo((ev.targetTouches[0].clientX-oCR.offsetLeft)/magnification,(ev.targetTouches[0].clientY-oCR.offsetTop)/magnification);
+                                            document.ontouchmove = function(ev){
+                                                var ev = ev || window.event;
+                                                oGCR.lineTo((ev.targetTouches[0].clientX-oCR.offsetLeft)/magnification,(ev.targetTouches[0].clientY-oCR.offsetTop)/magnification);
+                                                oGCR.stroke();
+
+                                                if((((ev.targetTouches[0].clientX-oCR.offsetLeft)/magnification)<=123)&&(((ev.targetTouches[0].clientX-oCR.offsetLeft)/magnification)>=0)){
+                                                    var obj={
+                                                        rx:(ev.targetTouches[0].clientX-oCR.offsetLeft)/magnification,
+                                                        ry:(ev.targetTouches[0].clientY-oCR.offsetTop)/magnification
+                                                    }
+                                                }
+                                                srightpointx.push(123-obj.rx);
+                                                srightpointy.push(obj.ry);
+                                            };
+                                            document.ontouchend = function(){
+                                                document.ontouchmove = null;
+                                                document.ontouchend = null;
+                                            };
+                                        };
+                                    }
+                                    else{
+                                        // 玩过直接显示结果页
+                                        location.href="friendresult.html?topicId="+topicId;
+                                    }
+                                }
+                            })
+                        }
+                    }
+                })
+            }
+        });
+    };
+
+    function redraw(){
+        var oCL = document.getElementById('rightpart');
+        var oGCL = oCL.getContext('2d');
+        oGCL.fillStyle="#fff";
+        oGCL.fillRect(0,0,123,248);
+        oGCL.beginPath();
+        srightpointx=[];
+        srightpointy=[];
+    }
+    function submitted(){
+
+        for(var i=0;i<srightpointx.length-1;i++){
+            // 如果i点横坐标=i+1点横坐标
+            if(srightpointx[i]==srightpointx[i+1]){
+                // 如果i点纵坐标=i+1点纵坐标
+                if(srightpointy[i]==srightpointy[i+1]){
+                }
+                // 如果i点纵坐标<i+1点纵坐标
+                else if(srightpointy[i]<srightpointy[i+1]){
+                    // 向下填充
+                    for(var a=srightpointy[i];a<srightpointy[i+1];a++){
+                        rightpointx.push(srightpointx[i]);
+                        rightpointy.push(a);
+                    }
+                }
+                // 如果i点纵坐标>i+1点纵坐标
+                else{
+                    // 向上填充
+                    for(var a=srightpointy[i];a>srightpointy[i+1];a--){
+                        rightpointx.push(srightpointx[i]);
+                        rightpointy.push(a);
+                    }
+                }
+            }
+            // 如果i点横坐标>i+1点横坐标
+            else if(srightpointx[i]>srightpointx[i+1]){
+                // 先向左填充
+                for(var a=srightpointx[i];a>srightpointx[i+1];a--){
+                    rightpointx.push(a);
+                    rightpointy.push(srightpointy[i]);
+                }
+                // 横向填充完，如果i点纵坐标=i+1点纵坐标
+                if(srightpointy[i]==srightpointy[i+1]){
+
+                }
+                // 如果i点纵坐标<i+1点纵坐标
+                else if(srightpointy[i]<srightpointy[i+1]){
+                    // 向下填充
+                    for(var b=srightpointy[i];b<srightpointy[i+1];b++){
+                        rightpointx.push(srightpointx[i+1]);
+                        rightpointy.push(b);
+                    }
+                }
+                // 如果i点纵坐标>i+1点纵坐标
+                else{
+                    // 向上填充
+                    for(var b=srightpointy[i];b>srightpointy[i+1];b--){
+                        rightpointx.push(srightpointx[i+1]);
+                        rightpointy.push(b);
+                    }
+                }
+            }
+            // 如果i点横坐标<i+1点横坐标
+            else{
+                // 先向右填充
+                for(var a=srightpointx[i];a<srightpointx[i+1];a++){
+                    rightpointx.push(a);
+                    rightpointy.push(srightpointy[i]);
+                }
+                // 横向填充完，如果i点纵坐标=i+1点纵坐标
+                if(srightpointy[i]==srightpointy[i+1]){
+
+                }
+                // 如果i点纵坐标<i+1点纵坐标
+                else if(srightpointy[i]<srightpointy[i+1]){
+                    // 向下填充
+                    for(var b=srightpointy[i];b<srightpointy[i+1];b++){
+                        rightpointx.push(srightpointx[i+1]);
+                        rightpointy.push(b);
+                    }
+                }
+                // 如果i点纵坐标>i+1点纵坐标
+                else{
+                    // 向上填充
+                    for(var b=srightpointy[i];b>srightpointy[i+1];b--){
+                        rightpointx.push(srightpointx[i+1]);
+                        rightpointy.push(b);
+                    }
+                }
+            }
+        }
+        rightpointx.push(srightpointx[srightpointx.length-1]);
+        rightpointy.push(srightpointy[srightpointx.length-1]);
+
+        square(leftpointx,leftpointy,rightpointx,rightpointy);
+
+        var d=JSON.stringify({x:srightpointx,y:srightpointy,s:similarity,headimgurl:myheadimgurl,nickname:mynickname});
+        $.ajax({
+            type: "POST",
+            url: methodurl+"heart/Completed",
+            data: {appId:"0a1b731fe4118808472f43ea5a31f600",topicId:topicId,openId:myopenid,unionId:myunionid,data:d},
+            dataType: "json",
+            success: function (e) {
+                location.href="friendresult.html?topicId="+topicId;
+            }
+        });
+    }
+</script>

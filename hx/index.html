@@ -1,0 +1,203 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="screen-orientation" content="portrait">
+    <meta name="x5-orientation" content="portrait">
+    <meta name="viewport" content="height=device-height,width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0">
+    <title>心灵感应</title>
+    <link rel="stylesheet" href="css/reset.css" />
+    <link rel="stylesheet" href="css/content.css" />
+</head>
+<body>
+<div class="logo">碰碰出品</div>
+<div style="height: 3rem"></div>
+<div class="content">
+    <div class="drawbox">
+        <canvas id="leftpart" class="leftpart" width="123" height="248"></canvas><div class="rightpart rightpart1"></div>
+    </div>
+    <div class="buttonbox">
+        <button class="restart" id="redraw">再画一次</button>
+        <button class="share"id="share">完成</button>
+    </div>
+
+</div>
+<div id="introduce" class="introduce" style="display: none;">
+    <img class="shareintro" src="images/shareintro.png">
+    <p style="font-size: 1.8rem;color: #eeeeee;margin: 13rem 2.5rem 0rem 2.5rem;">点击取消分享</p>
+</div>
+<div class="introduce" id="introducegame">
+    <div class="logo">碰碰出品</div>
+    <img class="introword" src="images/introword.png">
+    <button class="start"id="startgame">开始测试</button>
+</div>
+</body>
+</html>
+<script src="http://p1.cdn.pengpengla.com/sdk/2.2.0/js/seed.js"></script>
+<script>
+    var methodurl = "http://61.183.254.150/";
+    var codestr;
+    var myopenid;
+    var access_token;
+    var myunionid;
+    var myheadimgurl;
+    var mynickname;
+    var magnification;
+    var sleftpointx=[];
+    var sleftpointy=[];
+
+    function getcode(){
+        var oauth = new PP.oauth({
+            appid : '0a1b731fe4118808472f43ea5a31f600',
+            state : 'dfsdfsfd',
+            backurl : location.href
+        });
+        oauth.authenticate();
+    }
+    function getfont (){
+        var html1 = document.documentElement;
+        var screen = html1.clientWidth;
+        html1.style.fontSize = 0.0625*screen+'px';
+        magnification=(screen/320);
+    }
+    $("#share").on("click",function(e){
+        var d=JSON.stringify( {x:sleftpointx,y:sleftpointy,myheadimgurl:myheadimgurl,mynickname:mynickname,openid:myopenid,unionid:myunionid});
+        $.ajax({
+            type: "POST",
+            url: methodurl + "heart/play",
+            data: {appid: "0a1b731fe4118808472f43ea5a31f600", openid: myopenid, unionid: myunionid, data: d},
+            dataType: "json",
+            success: function (e) {
+                PP.wxShare.initialize();
+                PP.wxShare.on('ready' , function () {
+
+                    PP.wxShare.setData({
+                        title : '心灵感应',
+                        link : 'http://hustgame.pengpengla.com/hx/drawright.html?topicId=' + e,
+                        imgUrl : 'http://hustgame.pengpengla.com/hx/images/bgimg.png',
+                        desc : "快来看看你和 "+mynickname+"的心灵感应有多强o(^▽^)o",
+                        onMenuShareTimelineSuccess : function () {
+                            alert('分享朋友圈成功')
+                        },
+                        onMenuShareTimelineCancel : function () {
+                            alert('分享朋友圈取消')
+                        },
+                        onMenuShareAppMessageSuccess : function () {
+                            alert('分享给好友成功');
+                        },
+                        onMenuShareAppMessageCancel : function () {
+                            alert('分享给好友取消');
+                        },
+                        onMenuShareQQSuccess : function () {
+                            alert('分享到QQ成功');
+                        },
+                        onMenuShareQQCancel : function () {
+                            alert('分享到QQ取消');
+                        }
+                    });
+                });
+
+                var introduce = document.getElementById("introduce");
+                introduce.style.display = "";
+            }
+        });
+    });
+    $("#introduce").on("click",function(e){
+        var introduce = document.getElementById("introduce");
+        introduce.style.display = "none";
+    });
+    $("#startgame").on("click",function(e){
+        var introduce = document.getElementById("introducegame");
+        introduce.style.display = "none";
+    });
+    $("#redraw").on("click",function(e){
+        var oCL = document.getElementById('leftpart');
+        var oGCL = oCL.getContext('2d');
+        oGCL.fillStyle="#fff";
+        oGCL.fillRect(0,0,123,248);
+        oGCL.beginPath();
+        sleftpointx=[];
+        sleftpointy=[];
+    });
+
+    // 禁止触屏滑动
+    document.addEventListener("touchmove", function (e) {
+        e.preventDefault();
+    }, false);
+
+    window.onload = function(){
+
+        var urlstr=window.location.search;
+        if (urlstr.indexOf('code=') >= 0) {
+            var codestr_start=urlstr.indexOf("code=")+"code=".length;
+            var codestr_end=urlstr.indexOf("&",codestr_start);
+            if(codestr_end==-1){
+                codestr_end=urlstr.length;
+            }
+            codestr=urlstr.substring(codestr_start,codestr_end);
+        }
+        else {
+            getcode();
+        }
+
+        // 获取当前用户的openid
+        $.ajax({
+            type: "POST",
+            url: methodurl+"heart/access_token",
+            data: {appid:"0a1b731fe4118808472f43ea5a31f600",code:codestr},
+            dataType: "json",
+            success: function (e) {
+                var json = JSON.parse(e)
+                myopenid = json.openid;
+                access_token = json.access_token;
+
+                // 获取当前用户信息
+                $.ajax({
+                    type:"POST",
+                    url: methodurl+"heart/userinfo",
+                    data: {access_token:access_token,openId:myopenid},
+                    dataType: "json",
+                    success:function(e){
+                        var json=JSON.parse(e);
+                        myheadimgurl=json.headimgurl;
+                        mynickname=json.nickname;
+                        myunionid=json.unionid;
+                    }
+                });
+            }
+        });
+
+        // 定义rem
+        getfont();
+        window.onresize = function() {
+            getfont();
+        }
+
+        var oCL = document.getElementById('leftpart');
+        var oGCL = oCL.getContext('2d');
+
+        oCL.ontouchstart = function(ev){
+            var ev = ev || window.event;
+            oGCL.moveTo((ev.targetTouches[0].clientX-oCL.offsetLeft)/magnification,(ev.targetTouches[0].clientY-oCL.offsetTop)/magnification);
+
+            document.ontouchmove = function(ev){
+                var ev = ev || window.event;
+                oGCL.lineTo((ev.targetTouches[0].clientX-oCL.offsetLeft)/magnification,(ev.targetTouches[0].clientY-oCL.offsetTop)/magnification);
+                oGCL.stroke();
+                if((((ev.targetTouches[0].clientX-oCL.offsetLeft)/magnification)<=123)&&(((ev.targetTouches[0].clientX-oCL.offsetLeft)/magnification)>=0)){
+                    var obj={
+                        lx:(ev.targetTouches[0].clientX-oCL.offsetLeft)/magnification,
+                        ly:(ev.targetTouches[0].clientY-oCL.offsetTop)/magnification
+                    }
+                }
+                sleftpointx.push(obj.lx);
+                sleftpointy.push(obj.ly);
+            };
+            document.ontouchend = function(){
+                document.ontouchmove = null;
+                document.ontouchend = null;
+            };
+        };
+    };
+
+</script>

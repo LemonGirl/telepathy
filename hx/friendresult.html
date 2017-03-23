@@ -1,0 +1,261 @@
+﻿<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="screen-orientation" content="portrait">
+    <meta name="x5-orientation" content="portrait">
+    <meta name="viewport" content="height=device-height,width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0">
+    <title>心灵感应</title>
+    <link rel="stylesheet" href="css/reset.css" />
+    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/content.css" />
+</head>
+<body>
+<div class="logo">碰碰出品</div>
+<div class="content">
+    <div class="drawbox">
+        <canvas class="whole" width="248" height="248" id="whole"></canvas>
+    </div>
+    <p style="text-align: center;background-color: #ede7f3;font-size:0.7rem;margin-top: 1.3rem;" id="resultword"></p>
+    <div class="myresult">
+        <img class="myhead" id="myhead">
+        <div class="date">
+            <div class="fitdegree">契合度<lable id="resultpercent"></lable></div>
+            <div class="percentbar">
+                <div class="progress">
+                    <div id="percentbar" class="progress-bar progress-bar-info" role="progressbar"
+                         aria-valuenow="40" aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                </div>
+            </div>
+            <div>
+                <span class="myname" id="myname"></span>
+                <span class="friendname" id="friendname"></span>
+            </div>
+        </div>
+        <img class="friendhead" id="friendhead">
+    </div>
+    <div class="buttonbox">
+        <button class="restart" id="newgame">我也要画</button>
+        <button class="share" id="moregame">更多好玩</button>
+    </div>
+    <img class="ranking" src="images/ranking.png">
+    <div class="rankinglist" id="rankinglist"></div>
+</div>
+</body>
+</html>
+<script src="js/percentbar.js"></script>
+<script src="http://libs.baidu.com/jquery/1.9.1/jquery.min.js"></script>
+<script src="http://p1.cdn.pengpengla.com/sdk/2.2.0/js/seed.js"></script>
+<script>
+    var methodurl = "http://61.183.254.150/";
+    var sleftpointx=[],sleftpointy=[];
+    var srightpointx=[],srightpointy=[],similarity=0;
+    var myopenid;
+    var mynumber;
+    var access_token;
+
+    function getcode(){
+        var oauth = new PP.oauth({
+            appid : '0a1b731fe4118808472f43ea5a31f600',
+            state : 'dfsdfsfd',
+            backurl : location.href
+        });
+        oauth.authenticate();
+    }
+    function getfont (){
+        var html1 = document.documentElement;
+        var screen = html1.clientWidth;
+        html1.style.fontSize = 0.0625*screen+'px';
+        magnification=(screen/320);
+    }
+    function newgame(access_token,openId){
+        $.ajax({
+            type:"POST",
+            url: methodurl+"Heart/UserFollowWX",
+            data: {access_token:access_token,openId:openId},
+            dataType: "json",
+            success:function(e){
+                var subscribed=JSON.parse(e)
+                if(subscribed.subscribed==1){
+                    location.href = "index.html";
+                }
+                else {
+                    PP.joinwxQrcode.invoke({
+                        appid : '4a80d99281a93758d87f9faf3f691cf1'
+                    });
+                }
+            }
+        })
+    }
+    function drawwhole(sleftpointx,sleftpointy,srightpointx,srightpointy,canvasId){
+        var oCW = document.getElementById(canvasId);
+        var oGCW = oCW.getContext('2d');
+        var ev = ev || window.event;
+        oGCW.moveTo(sleftpointx[0],sleftpointy[0]);
+        for(var i=1;i<sleftpointx.length;i++){
+            oGCW.lineTo(sleftpointx[i],sleftpointy[i]);
+        };
+        oGCW.stroke();
+        oGCW.moveTo(248-srightpointx[0],srightpointy[0]);
+        for(var i=1;i<srightpointx.length;i++){
+            oGCW.lineTo(248-srightpointx[i],srightpointy[i]);
+        };
+        oGCW.stroke();
+    }
+    function displayresult(similarity,resultpercentid,percentbarid,resultwordid){
+        document.getElementById(resultpercentid).innerText=similarity+"%";
+        document.getElementById(percentbarid).style.width=similarity+"%";
+
+        if(similarity<0){
+            document.getElementById(resultwordid).innerText="在莫大的阴影里，我已然找不到你。。。";
+        }
+        else if((similarity>=0)&&(similarity<=50)){
+            document.getElementById(resultwordid).innerText="点赞之交，难道说的就是我们？！";
+        }
+        else if((similarity>50)&&(similarity<=80)){
+            document.getElementById(resultwordid).innerText="我们就是心心相印的一对儿！";
+        }
+        else{
+            document.getElementById(resultwordid).innerText="传说中遗失的半颗心，我已经找到了！！";
+        }
+    }
+    $("#moregame").on("click",function(e){
+        window.location.href = 'http://www.pengpengla.com/web/index.html';
+    });
+
+    window.onload = function(){
+        // 首先判断有没有topicId
+        var urlstr=window.location.search;
+        if(urlstr.indexOf("topicId")>=0){
+            // 再判断有没有code
+            if(urlstr.indexOf("code=")>=0){
+                var codestr_start=urlstr.indexOf("code=")+"code=".length;
+                var codestr_end=urlstr.indexOf("&",codestr_start);
+                if(codestr_end==-1){
+                    codestr_end=urlstr.length;
+                }
+                codestr=urlstr.substring(codestr_start,codestr_end);
+            }
+            else{
+                getcode();
+            }
+            var topicId_start=urlstr.indexOf("topicId=")+"topicId=".length;
+            var topicId_end=urlstr.indexOf("&",topicId_start);
+            topicId=urlstr.substring(topicId_start,topicId_end);
+        }
+        else{
+            document.write("Error!!!")
+            return;
+        }
+
+        // 定义rem
+        getfont();
+        window.onresize = function() {
+            getfont();
+        }
+
+        // 获取左边数据
+        $.ajax({
+            type: "POST",
+            url: methodurl+"heart/GetData",
+            data: {appId:"0a1b731fe4118808472f43ea5a31f600",topicId:topicId},
+            dataType: "json",
+            success: function (e) {
+                var getDataResult=JSON.parse(e)
+                console.log(getDataResult);
+                sleftpointx= getDataResult.x;
+                sleftpointy=getDataResult.y;
+                document.getElementById("myhead").src=getDataResult.myheadimgurl;
+                document.getElementById("myname").innerText=getDataResult.mynickname;
+
+                // 获取右边数据
+                $.ajax({
+                    type: "POST",
+                    url: methodurl+"heart/GetFullDatatest",
+                    data: {appId:"0a1b731fe4118808472f43ea5a31f600",topicId:topicId},
+                    dataType: "json",
+                    success: function (e) {
+                        var getFullDataResult=JSON.parse(e);
+                        console.log(getFullDataResult);
+                        getFullDataResult.sort(function(a,b){
+                            return JSON.parse(b.data).s-JSON.parse(a.data).s;
+                        });
+                        // 获取当前用户openid
+                        $.ajax({
+                            type:"POST",
+                            url:methodurl+"Heart/access_token",
+                            data:{appId:"0a1b731fe4118808472f43ea5a31f600",code:codestr},
+                            dataType:"json",
+                            success:function(e){
+                                var json=JSON.parse(e)
+                                console.log(json);
+                                myopenid=json.openid;
+                                access_token=json.access_token;
+
+                                // 获取当前用户信息
+                                $.ajax({
+                                    type:"POST",
+                                    url: methodurl+"heart/userinfo",
+                                    data: {access_token:access_token,openId:myopenid},
+                                    dataType: "json",
+                                    success:function(e){
+                                        var json=JSON.parse(e);
+                                        headimgurl=json.headimgurl;
+                                        nickname=json.nickname;
+                                        document.getElementById("friendhead").src=headimgurl;
+                                        document.getElementById("friendname").innerText=nickname;
+                                        console.log(json);
+                                    }
+                                });
+
+                                for(var i=0;i<getFullDataResult.length;i++){
+                                    srightpointx= JSON.parse(getFullDataResult[i].data).x;
+                                    srightpointy=JSON.parse(getFullDataResult[i].data).y;
+                                    similarity=JSON.parse(getFullDataResult[i].data).s;
+                                    if(getFullDataResult[i].openid==myopenid){
+                                        drawwhole(sleftpointx,sleftpointy,JSON.parse(getFullDataResult[i].data).x,JSON.parse(getFullDataResult[i].data).y,"whole");
+
+                                        displayresult(similarity,"resultpercent","percentbar","resultword");
+                                    }
+
+                                    // 排行榜
+                                    $("#rankinglist").append("  <div class='rank1'>"+
+                                            "<div class='friend1'>"+
+                                            "<img class='userhead' id='userhead"+i+"'>"+
+                                            "<div class='result1'>"+
+                                            "<p class='username' id='username"+i+"'></p>"+
+                                            "<div class='date1'>"+
+                                            "<lable>契合度</lable>"+
+                                            "<div class='percentbar1'>"+
+                                            "<div class='progress'>"+
+                                            "<div id='percentbar1"+i+"' class='progress-bar progress-bar-warning' role='progressbar' aria-valuenow='60' aria-valuemin='0' aria-valuemax='100'>"+
+                                            "</div>"+
+                                            "</div>"+
+                                            "</div>"+
+                                            "<label id='resultpercent1"+i+"'></label>"+
+                                            "</div>"+
+                                            "</div>"+
+                                            "<p style='text-align: center;background-color: #ede7f3;margin-top:2px;font-size: 10px;' id='resultword1"+i+"'></p>"+
+                                            "</div>"+
+                                            "<canvas class='historyheart' width='248' height='248' id='historyheart"+i+"'></canvas>"+
+                                            "</div>");
+
+                                    document.getElementById("userhead"+i).src=JSON.parse(getFullDataResult[i].data).headimgurl;
+                                    document.getElementById("username"+i).innerText=JSON.parse(getFullDataResult[i].data).nickname;
+                                    displayresult(similarity,"resultpercent1"+i,"percentbar1"+i,"resultword1"+i)
+
+                                    drawwhole(sleftpointx,sleftpointy,srightpointx,srightpointy,"historyheart"+i);
+                                }
+
+                                $("#newgame").on("click",function(e){
+                                    newgame(access_token,myopenid);
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+</script>
